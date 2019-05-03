@@ -15,7 +15,7 @@
             </div>
           </div>
         </div>
-        <div v-else-if="!loggedIn" class="center">
+        <div v-else-if="!loggedIn" class="center login-container">
           <h5> You are not logged in </h5>
           <a class="btn waves-teal waves-effect" @click="login">Login to twoseven.xyz</a>
         </div>
@@ -57,7 +57,7 @@
           </div>
         </div>
 
-        <div style="position: absolute; bottom: 0; width: 100%;">
+        <div style="position: fixed; bottom: 0; width: 100%;">
           <div>
             <code style="float: right;padding: 8px 16px;">v{{ version }}</code>
           </div>
@@ -238,6 +238,17 @@ html, body {
 #app {
   height: 100%;
   position: relative;
+  .row {
+    height: 100%;
+    .col {
+      position: relative;
+      height: inherit;
+    }
+    .login-container {
+      height: inherit;
+      position: relative;
+    }
+  }
 }
 
 #options {
