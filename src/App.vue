@@ -35,6 +35,12 @@
               </div>
             </a>
 
+            <a class="collection-item option" @click="openSettings">
+              <div>
+                <span> Settings </span>
+              </div>
+            </a>
+
             <a v-if="validOrigin" class="collection-item option" @click="handlePauseOnWebiste">
               <span>
                 <span v-if="isPausedOnWebsite">Unpause</span>
@@ -84,6 +90,8 @@ function isEmpty (obj) {
   }
   throw new Error(`isEmpty not implemented for instance: '${typeof obj}'`)
 }
+
+const browser = window.chrome || window.browser
 
 export default {
   name: 'app',
@@ -189,11 +197,13 @@ export default {
     },
     handlePauseOnAllWebsites () {
       this.triggerAction('pause-on-all-websites', 'base-bg', false, { shouldPause: !this.isPausedOnAllWebsites })
+    },
+    openSettings () {
+      browser.runtime.openOptionsPage()
     }
   },
   async beforeMount () {
     const self = this
-    const browser = window.chrome || window.browser
     const port = browser.runtime.connect({ name: tag })
     this.port = port
     port.onMessage.addListener((msg) => {
