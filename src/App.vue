@@ -110,7 +110,7 @@ export default {
   },
   computed: {
     loggedIn () {
-      return this.authResult && this.isLoggedIn(this.authResult.id_token)
+      return this.authResult && this.isLoggedIn(this.authResult.access_token)
     },
     userHash () {
       return md5(this.profile.email)
