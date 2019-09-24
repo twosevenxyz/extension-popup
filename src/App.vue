@@ -2,7 +2,7 @@
   <div id="app">
     <div class="row">
       <div class="col s12" style="padding: 0;">
-        <div v-if="waitingForBG" class="right">
+        <div v-if="waitingForBG" class="center" style="margin: 8px 0;">
           <div class="preloader-wrapper small active">
             <div class="spinner-layer spinner-green-only">
               <div class="circle-clipper left">
@@ -17,18 +17,21 @@
         </div>
         <div v-else-if="!loggedIn" class="center login-container">
           <h5> You are not logged in </h5>
-          <a class="btn waves-teal waves-effect" @click="login">Login to twoseven.xyz</a>
+          <a class="btn waves-teal waves-effect" style="margin-bottom: 8px" @click="login">Login to twoseven.xyz</a>
+          <div class="divider"></div>
         </div>
-        <div v-else>
-          <div id="options" class="collection">
-            <div id="profile" style="display: inline-block;">
-              <img :src="avatarSrc" class="circle avatar" :alt="nickname"/>
-              <span class="nickname">{{ nickname }}</span>
-              <a class="btn btn-small btn-flat right logout-btn" @click="logout">Logout</a>
+        <div>
+          <div id="options" class="collection" style="margin-top: 0;">
+            <div v-if="loggedIn">
+              <div id="profile" style="display: inline-block;">
+                <img :src="avatarSrc" class="circle avatar" :alt="nickname"/>
+                <span class="nickname">{{ nickname }}</span>
+                <a class="btn btn-small btn-flat right logout-btn" @click="logout">Logout</a>
+              </div>
+              <div class="divider"></div>
             </div>
-            <div class="divider"></div>
 
-            <a v-if="tabHasMedia" class="collection-item option" @click="showTabMedia">
+            <a v-if="loggedIn && tabHasMedia" class="collection-item option" @click="showTabMedia">
               <div>
                 <span> Show Media </span>
                 <span class="right new badge media-badge" data-badge-caption="">{{ Object.keys(tabMedia).length }}</span>
@@ -255,7 +258,6 @@ html, body {
       height: inherit;
     }
     .login-container {
-      height: inherit;
       position: relative;
     }
   }
