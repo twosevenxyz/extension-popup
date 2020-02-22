@@ -80,6 +80,9 @@
 import md5 from 'md5'
 import jwtDecode from 'jwt-decode'
 import URI from 'urijs'
+import 'materialize-css/dist/css/materialize.min.css'
+import 'materialize-css/dist/js/materialize.min.js'
+
 const tag = 'browser-action'
 
 function isEmpty (obj) {
