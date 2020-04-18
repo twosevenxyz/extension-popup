@@ -31,7 +31,7 @@
               <div class="divider"></div>
             </div>
 
-            <a v-if="loggedIn && tabHasMedia" class="collection-item option" @click="showTabMedia">
+            <a v-if="shouldShowMedia" class="collection-item option" @click="showTabMedia">
               <div>
                 <span> Show Media </span>
                 <span class="right new badge media-badge" data-badge-caption="">{{ Object.keys(tabMedia).length }}</span>
@@ -80,6 +80,7 @@
 import md5 from 'md5'
 import jwtDecode from 'jwt-decode'
 import URI from 'urijs'
+import is from 'is_js'
 import 'materialize-css/dist/css/materialize.min.css'
 import 'materialize-css/dist/js/materialize.min.js'
 
@@ -110,6 +111,7 @@ export default {
       isPausedOnAllWebsites: false,
       tabMedia: undefined,
       profile: undefined,
+      lastActiveTwoSevenTabId: undefined,
       waitingForBG: false,
       port: undefined
     }
@@ -117,6 +119,9 @@ export default {
   computed: {
     loggedIn () {
       return this.authResult && this.isLoggedIn(this.authResult.access_token)
+    },
+    isMobile () {
+      return is.mobile()
     },
     userHash () {
       return md5(this.profile.email)
@@ -138,6 +143,19 @@ export default {
         return false
       }
       return isEmpty(this.tabMedia)
+    },
+    shouldShowMedia () {
+      const { lastActiveTwoSevenTabId, loggedIn, tabHasMedia } = this
+      if (!tabHasMedia) {
+        return false
+      }
+      // We have some media that was detected on this tab
+      if (is.mobile()) {
+        // Mobile devices cannot login. So check whether they have a twoseven tab open
+        // If they do, we can simply load it in there without requiring login check
+        return lastActiveTwoSevenTabId > -1
+      }
+      return loggedIn
     }
   },
   watch: {
@@ -227,6 +245,9 @@ export default {
           self.isPausedOnWebsite = msg.isPausedOnWebsite
           self.isPausedOnAllWebsites = msg.isPausedOnAllWebsites
           break
+        case 'last-twoseven-tab':
+          self.lastActiveTwoSevenTabId = msg.lastActiveTwoSevenTabId
+          break
         case 'tab-update':
           console.log('Received tab update')
           self.isPausedOnWebsite = msg.isPausedOnWebsite
@@ -237,6 +258,7 @@ export default {
 
     await this.triggerAction('version', 'base-bg', 'version')
     await this.triggerAction('credentials', 'auth-bg', 'login-success')
+    await this.triggerAction('last-twoseven-tab', 'base-bg', 'last-twoseven-tab')
     await this.triggerAction('tab-info', 'base-bg', 'tab-info')
   },
   mounted () {
