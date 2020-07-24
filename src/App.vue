@@ -118,7 +118,7 @@ export default {
   },
   computed: {
     loggedIn () {
-      return this.authResult && this.isLoggedIn(this.authResult.access_token)
+      return this.authResult && this.isLoggedIn(this.authResult.access_token) && this.profile
     },
     isMobile () {
       return is.mobile()
