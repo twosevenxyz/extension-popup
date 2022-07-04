@@ -1,92 +1,30 @@
-<template>
-  <div id="app">
-    <div class="row">
-      <div class="col s12" style="padding: 0;">
-        <div v-if="waitingForBG" class="center" style="margin: 8px 0;">
-          <div class="preloader-wrapper small active">
-            <div class="spinner-layer spinner-green-only">
-              <div class="circle-clipper left">
-                <div class="circle"></div>
-              </div><div class="gap-patch">
-                <div class="circle"></div>
-              </div><div class="circle-clipper right">
-                <div class="circle"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else-if="!loggedIn" class="center login-container">
-          <h5> You are not logged in </h5>
-          <a class="btn waves-teal waves-effect" style="margin-bottom: 8px" @click="login">Login to twoseven.xyz</a>
-          <div class="divider"></div>
-        </div>
-        <div>
-          <div id="options" class="collection" style="margin-top: 0;">
-            <div v-if="loggedIn">
-              <div id="profile" style="display: inline-block;">
-                <img :src="avatarSrc" class="circle avatar" :alt="nickname"/>
-                <span class="nickname">{{ nickname }}</span>
-                <a class="btn btn-small btn-flat right logout-btn" @click="logout">Logout</a>
-              </div>
-              <div class="divider"></div>
-            </div>
+<script setup lang="ts">
+import { Ref, ref, defineComponent } from 'vue'
+import { computed } from '@vue/reactivity'
+import type { onMessage as OnMessage, sendMessage as SendMessage } from 'webext-bridge'
 
-            <a v-if="shouldShowMedia" class="collection-item option" @click="showTabMedia">
-              <div>
-                <span> Show Media </span>
-                <span class="right new badge media-badge" data-badge-caption="">{{ Object.keys(tabMedia).length }}</span>
-              </div>
-            </a>
-
-            <a class="collection-item option" @click="openSettings">
-              <div>
-                <span> Settings </span>
-              </div>
-            </a>
-
-            <a v-if="validOrigin" class="collection-item option" @click="handlePauseOnWebiste">
-              <span>
-                <span v-if="isPausedOnWebsite">Unpause</span>
-                <span v-else>Pause</span>
-                on this website
-              </span>
-            </a>
-
-            <a class="collection-item option" @click="handlePauseOnAllWebsites">
-              <span>
-                <span v-if="isPausedOnAllWebsites">Unpause</span>
-                <span v-else>Pause</span>
-                on all websites
-              </span>
-            </a>
-
-            <a class="collection-item option" @click="openTwoSeven">
-              Go to twoseven.xyz
-            </a>
-          </div>
-        </div>
-
-        <div style="position: fixed; bottom: 0; width: 100%;">
-          <div>
-            <code style="float: right;padding: 8px 16px;">v{{ version }}</code>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script>
-import md5 from 'md5'
-import jwtDecode from 'jwt-decode'
-import URI from 'urijs'
+import type { Browser } from 'webextension-polyfill'
 import is from 'is_js'
-import 'materialize-css/dist/css/materialize.min.css'
-import 'materialize-css/dist/js/materialize.min.js'
+import Spinner from './components/spinner.vue'
+import { Profile } from '../shim'
 
-const tag = 'browser-action'
+const props = defineProps<{
+  browser: Browser,
+  onMessage: typeof OnMessage,
+  sendMessage: typeof SendMessage,
+  version: String,
+  loggedIn: Ref<boolean>,
+  origin: string,
+  isPausedOnWebsite: Ref<boolean>,
+  isPausedOnAllWebsites: Ref<boolean>,
+  tabMedia: any,
+  profile: Ref<Profile>,
+  lastActiveTwoSevenTabId: number
+}>()
 
-function isEmpty (obj) {
+const waitingForBG = ref(false)
+
+function isEmpty (obj: any) {
   if (!obj) {
     return true
   }
@@ -98,219 +36,225 @@ function isEmpty (obj) {
   throw new Error(`isEmpty not implemented for instance: '${typeof obj}'`)
 }
 
-const browser = window.chrome || window.browser
+const avatarSrc = computed<string>(() => {
+  return `https://twoseven.xyz/api/gravatar/${props.profile.value?.userHash}/64`
+})
 
-export default {
-  name: 'app',
-  data: function () {
-    return {
-      version: '',
-      authResult: undefined,
-      origin: undefined,
-      isPausedOnWebsite: false,
-      isPausedOnAllWebsites: false,
-      tabMedia: undefined,
-      profile: undefined,
-      lastActiveTwoSevenTabId: undefined,
-      waitingForBG: false,
-      port: undefined
-    }
-  },
-  computed: {
-    loggedIn () {
-      return this.authResult && this.isLoggedIn(this.authResult.access_token) && this.profile
-    },
-    isMobile () {
-      return is.mobile()
-    },
-    userHash () {
-      return md5(this.profile.email)
-    },
-    avatarSrc () {
-      return `https://twoseven.xyz/api/gravatar/${this.userHash}/64`
-    },
-    nickname () {
-      return this.profile.nickname
-    },
-    validOrigin () {
-      if (this.origin && this.origin.startsWith('chrome')) {
-        return false
-      }
-      return true
-    },
-    tabHasMedia () {
-      if (!this.tabMedia) {
-        return false
-      }
-      return isEmpty(this.tabMedia)
-    },
-    shouldShowMedia () {
-      const { lastActiveTwoSevenTabId, loggedIn, tabHasMedia } = this
-      if (!tabHasMedia) {
-        return false
-      }
-      // We have some media that was detected on this tab
-      if (is.mobile()) {
-        // Mobile devices cannot login. So check whether they have a twoseven tab open
-        // If they do, we can simply load it in there without requiring login check
-        return lastActiveTwoSevenTabId > -1
-      }
-      return loggedIn
-    }
-  },
-  watch: {
-    pausedTabs () {
-      localStorage.pausedTabs = JSON.stringify(this.pausedTabs)
-    }
-  },
-  methods: {
-    isLoggedIn (token) {
-      if (!token) {
-        return
-      }
-      // The user is logged in if their token isn't expired
-      return jwtDecode(token).exp > Date.now() / 1000
-    },
+const nickname = computed<string | undefined>(() => {
+  return props.profile.value?.nickname
+})
 
-    logout () {
-      // Remove the idToken from storage
-      this.authResult = undefined
-      this.profile = undefined
-      this.triggerAction('logout', 'auth-bg')
-    },
-    async waitForEvent (evt) {
-      const { port } = this
-      this.waitingForBG = true
-      await new Promise((resolve, reject) => {
-        port.onMessage.addListener(function once (msg) {
-          if (msg.action === evt) {
-            port.onMessage.removeListener(once)
-            resolve()
-          }
-        })
-      })
-      this.waitingForBG = false
-    },
-    async login () {
-      this.triggerAction('authenticate', 'auth-bg', 'login-success')
-    },
-    async triggerAction (action, to, waitForEvent, data = {}) {
-      const { port } = this
-      port.postMessage({
-        from: tag,
-        to,
-        action,
-        ...data
-      })
-      if (waitForEvent) {
-        await this.waitForEvent(waitForEvent)
-      }
-    },
-    updateAuthResults ({ authResult, profile }) {
-      this.authResult = authResult
-      this.profile = profile
-    },
-    openTwoSeven () {
-      this.triggerAction('open-twoseven.xyz', 'base-bg')
-    },
-    showTabMedia () {
-      this.triggerAction('show-tab-media', 'tab-media-bg')
-    },
-    handlePauseOnWebiste () {
-      this.triggerAction('pause-on-website', 'base-bg', false, { shouldPause: !this.isPausedOnWebsite })
-    },
-    handlePauseOnAllWebsites () {
-      this.triggerAction('pause-on-all-websites', 'base-bg', false, { shouldPause: !this.isPausedOnAllWebsites })
-    },
-    openSettings () {
-      browser.runtime.openOptionsPage()
-    }
-  },
-  async beforeMount () {
-    const self = this
-    const port = browser.runtime.connect({ name: tag })
-    this.port = port
-    port.onMessage.addListener((msg) => {
-      switch (msg.action) {
-        case 'version':
-          self.version = msg.version
-          break
-        case 'login-success':
-        case 'credentials':
-          self.updateAuthResults(msg)
-          break
-        case 'tab-info':
-          self.origin = new URI(msg.url).origin()
-          self.tabMedia = msg.tabMedia
-          self.isPausedOnWebsite = msg.isPausedOnWebsite
-          self.isPausedOnAllWebsites = msg.isPausedOnAllWebsites
-          break
-        case 'last-twoseven-tab':
-          self.lastActiveTwoSevenTabId = msg.lastActiveTwoSevenTabId
-          break
-        case 'tab-update':
-          console.log('Received tab update')
-          self.isPausedOnWebsite = msg.isPausedOnWebsite
-          self.isPausedOnAllWebsites = msg.isPausedOnAllWebsites
-          break
-      }
-    })
-
-    await this.triggerAction('version', 'base-bg', 'version')
-    await this.triggerAction('credentials', 'auth-bg', 'login-success')
-    await this.triggerAction('last-twoseven-tab', 'base-bg', 'last-twoseven-tab')
-    await this.triggerAction('tab-info', 'base-bg', 'tab-info')
-  },
-  mounted () {
-    window.app = this
+const validOrigin = computed<boolean>(() => {
+  if (origin && origin.startsWith('chrome')) {
+    return false
   }
+  return true
+})
+
+const shouldShowMedia = computed<boolean>(() => {
+  if (isEmpty(props.tabMedia)) {
+    return false
+  }
+  // We have some media that was detected on this tab
+  if (is.mobile()) {
+    // Mobile devices cannot login. So check whether they have a twoseven tab open
+    // If they do, we can simply load it in there without requiring login check
+    return (props.lastActiveTwoSevenTabId || -1) > -1
+  }
+  return props.loggedIn.value
+})
+
+const login = async () => {
+  await props.sendMessage('authenticate', {})
+}
+
+const logout = () => {
+  // Remove the idToken from storage
+  props.sendMessage('logout', {})
+}
+
+// Actions
+const openTwoSeven = async () => {
+  await props.sendMessage('open-twoseven.xyz', {})
+}
+
+const showTabMedia = async () => {
+  await props.sendMessage('show-tab-media', {})
+}
+
+const handlePauseOnWebiste = async () => {
+  await props.sendMessage('pause-on-website', { shouldPause: !props.isPausedOnWebsite.value })
+}
+
+const handlePauseOnAllWebsites = async () => {
+  props.sendMessage('pause-on-all-websites', { shouldPause: !props.isPausedOnAllWebsites.value })
+}
+const openSettings = () => {
+  return props.browser.runtime.openOptionsPage()
 }
 </script>
 
+<template>
+  <div class="root dropdown is-active">
+    <div class="options dropdown-content pb-0">
+      <div v-if="waitingForBG" class="" style="margin: 8px 0;">
+        <Spinner color="#009688" :size="48" style="margin: auto" />
+      </div>
+      <div v-else-if="!loggedIn.value">
+        <div class="dropdown-item has-text-centered login-container">
+          <h5 class="is-size-5 has-text-weight-bold"> You are not logged in </h5>
+          <button class="button" style="margin-bottom: 8px" @click="login">Login to twoseven.xyz</button>
+        </div>
+        <hr class="dropdown-divider" />
+      </div>
+
+      <div v-if="loggedIn.value" class="dropdown-item">
+        <div id="profile">
+          <figure class="image is-32x32 is-inline-block">
+            <img :src="avatarSrc" class="is-rounded" :alt="nickname" />
+          </figure>
+          <span class="nickname">{{ nickname }}</span>
+          <button class="button is-small" @click="logout">Logout</button>
+        </div>
+        <div class="divider"></div>
+      </div>
+
+      <a v-if="shouldShowMedia" class="dropdown-item option" @click="showTabMedia">
+        <div>
+          <span class="icon-text">
+            <span class="icon">
+              <i-carbon-media-library />
+            </span>
+            <span>Show Media</span>
+          </span>
+          <span class="has-text-right new badge media-badge" data-badge-caption="">{{ Object.keys(tabMedia).length
+          }}</span>
+        </div>
+      </a>
+
+      <a class="dropdown-item option" @click="openSettings">
+        <span class="icon-text">
+          <span class="icon">
+            <i-cil-settings />
+          </span>
+          <span> Settings </span>
+        </span>
+      </a>
+
+      <a v-if="validOrigin" class="dropdown-item option" @click="handlePauseOnWebiste">
+        <span class="icon-text">
+          <span class="icon">
+            <i-mdi-play v-if="isPausedOnWebsite.value" />
+            <i-mdi-pause v-else />
+          </span>
+          <span> {{ isPausedOnWebsite.value ? 'Unpause' : 'Pause' }} on this website</span>
+        </span>
+      </a>
+
+      <a class="dropdown-item option" @click="handlePauseOnAllWebsites">
+        <span class="icon-text">
+          <span class="icon">
+            <i-mdi-play v-if="isPausedOnAllWebsites.value" />
+            <i-mdi-pause v-else />
+          </span>
+          <span> {{ isPausedOnAllWebsites.value ? 'Unpause' : 'Pause' }} on all websites</span>
+        </span>
+      </a>
+
+      <a class="dropdown-item option" @click="openTwoSeven">
+        <span class="icon-text">
+          <span class="icon">
+            <img src="/assets/icon-512x512.png" />
+          </span>
+          <span>Go to twoseven.xyz</span>
+        </span>
+      </a>
+
+      <div style="position: absolute; bottom: 8px; right: 16px;">
+        <span class="is-family-monospace is-size-7">v{{ version }}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+export default defineComponent({
+  name: 'app',
+  components: { Spinner },
+  mounted () {
+    window.app = this
+  }
+})
+</script>
+
 <style lang="scss">
-html, body {
+@import 'bulma/bulma.sass';
+
+html,
+body {
   margin: 0;
   padding: 0;
 }
 
-#app {
-  height: 100%;
+.root {
   position: relative;
-  .row {
-    height: 100%;
-    .col {
-      position: relative;
-      height: inherit;
-    }
-    .login-container {
-      position: relative;
-    }
+  width: 100%;
+  height: 100%;
+
+  .login-container {
+    position: relative;
+  }
+}
+
+.dropdown {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  height: inherit;
+
+  .dropdown-content {
+    height: inherit;
+  }
+
+  .dropdown-item {
+    font-size: inherit;
+    padding-right: 2rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
 }
 
 #options {
   border-radius: 0 !important;
   border-top: none;
+
+  font-size: 1.2em;
 }
 
 #profile {
   width: 100%;
   margin-top: 1em;
   margin-bottom: 2em;
-}
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 
-#profile .avatar {
-  margin-left: 8%;
-  margin-right: 3%;
-  height: 32px;
-  width: 32px;
-  vertical-align: middle;
-}
+  .image {
+    display: flex;
+  }
 
-#profile .nickname {
-  font-size: 1.2em;
-  font-weight: 600;
-  vertical-align: middle;
+  .nickname {
+    display: flex;
+    margin-left: 8px;
+    font-size: 1.2em;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  button {
+    margin-right: -24px;
+  }
 }
 
 .collection-item.option {
