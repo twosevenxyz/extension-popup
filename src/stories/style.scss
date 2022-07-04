@@ -1,4 +1,4 @@
-html, body {
+#app-container {
     width: 265px !important;
     min-width: 265px !important;
     overflow-x: hidden;
@@ -6,10 +6,6 @@ html, body {
     height: 360px !important;
     padding: 0 !important;
     margin: 0 !important;
-}
-
-#root {
-    height: 100%;
 }
 
 #app {

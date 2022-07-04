@@ -17,7 +17,7 @@ const props = defineProps<{
   origin: string,
   isPausedOnWebsite: Ref<boolean>,
   isPausedOnAllWebsites: Ref<boolean>,
-  tabMedia: any,
+  tabMedia: Ref<Record<string, any>>,
   profile: Ref<Profile>,
   lastActiveTwoSevenTabId: number
 }>()
@@ -52,7 +52,7 @@ const validOrigin = computed<boolean>(() => {
 })
 
 const shouldShowMedia = computed<boolean>(() => {
-  if (isEmpty(props.tabMedia)) {
+  if (isEmpty(props.tabMedia.value)) {
     return false
   }
   // We have some media that was detected on this tab
@@ -127,7 +127,7 @@ const openSettings = () => {
             </span>
             <span>Show Media</span>
           </span>
-          <span class="badge media-badge" style="margin-right: -24px">{{ Object.keys(tabMedia).length }}</span>
+          <span class="badge media-badge" style="margin-right: -24px">{{ Object.keys(tabMedia.value).length }}</span>
         </div>
       </a>
 
