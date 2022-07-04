@@ -38,6 +38,17 @@ export default {
           break
         }
       }
+    },
+    tabMedia: {
+      c42287a4e73a0efb02334433980a2c5e: {
+        videoSelector: 'web',
+        referer: 'https://www.ted.com/talks/alison_killing_how_data_driven_journalism_illuminates_patterns_of_injustice',
+        videoURL: 'hls:https://hls.ted.com/project_masters/7817/manifest.m3u8?intro_master_id=2346',
+        hash: 'c42287a4e73a0efb02334433980a2c5e',
+        entryType: 'media',
+        mediaHandlerHash: '0:79cfe565867b423309de6f043ba31a16',
+        listeners: {}
+      }
     }
   },
   parameters: {

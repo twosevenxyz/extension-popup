@@ -29,9 +29,9 @@ function isEmpty (obj: any) {
     return true
   }
   if (obj instanceof Object) {
-    return Object.keys(obj).length > 0
+    return Object.keys(obj).length === 0
   } else if (obj instanceof Array) {
-    return obj.length > 0
+    return obj.length === 0
   }
   throw new Error(`isEmpty not implemented for instance: '${typeof obj}'`)
 }
@@ -120,15 +120,14 @@ const openSettings = () => {
       </div>
 
       <a v-if="shouldShowMedia" class="dropdown-item option" @click="showTabMedia">
-        <div>
-          <span class="icon-text">
+        <div class="is-flex is-flex-direction-row">
+          <span class="icon-text is-flex-grow-1">
             <span class="icon">
               <i-carbon-media-library />
             </span>
             <span>Show Media</span>
           </span>
-          <span class="has-text-right new badge media-badge" data-badge-caption="">{{ Object.keys(tabMedia).length
-          }}</span>
+          <span class="badge media-badge" style="margin-right: -24px">{{ Object.keys(tabMedia).length }}</span>
         </div>
       </a>
 
@@ -197,6 +196,8 @@ body {
 }
 
 .root {
+  --background-primary: #009688;
+  --text-on-primary: #fff;
   position: relative;
   width: 100%;
   height: 100%;
@@ -215,6 +216,7 @@ body {
 
   .dropdown-content {
     height: inherit;
+    background: inherit;
   }
 
   .dropdown-item {
@@ -274,6 +276,17 @@ body {
 }
 
 .badge.media-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  margin-left: 14px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--text-on-primary);
+  background-color: var(--background-primary);
+  border-radius: 2px;
   min-width: 2em;
 }
 
