@@ -10,38 +10,49 @@ const isPausedOnWebsite = ref(false)
 const isPausedOnAllWebsites = ref(false)
 const loggedIn = ref(false)
 
-const args = {
-  version: '3.0.0',
-  profile,
-  isPausedOnWebsite,
-  isPausedOnAllWebsites,
-  loggedIn,
-  sendMessage (evt: string, args: any) {
-    switch (evt) {
-      case 'authenticate': {
-        loggedIn.value = true
-        break
-      }
-      case 'logout': {
-        loggedIn.value = false
-        break
-      }
-      case 'pause-on-website': {
-        isPausedOnWebsite.value = args.shouldPause
-        break
-      }
-      case 'pause-on-all-websites': {
-        isPausedOnAllWebsites.value = args.shouldPause
-        break
-      }
-    }
-  }
-}
-
 export default {
   title: 'Popup',
   component: Popup,
-  args
+  args: {
+    version: '3.0.0',
+    profile,
+    isPausedOnWebsite,
+    isPausedOnAllWebsites,
+    loggedIn,
+    sendMessage (evt: string, args: any) {
+      switch (evt) {
+        case 'authenticate': {
+          loggedIn.value = true
+          break
+        }
+        case 'logout': {
+          loggedIn.value = false
+          break
+        }
+        case 'pause-on-website': {
+          isPausedOnWebsite.value = args.shouldPause
+          break
+        }
+        case 'pause-on-all-websites': {
+          isPausedOnAllWebsites.value = args.shouldPause
+          break
+        }
+      }
+    }
+  },
+  parameters: {
+    controls: {
+      exclude: [
+        'isPausedOnWebsite',
+        'isPausedOnAllWebsites',
+        'profile',
+        'loggedIn',
+        'sendMessage',
+        'onMessage',
+        'browser'
+      ]
+    }
+  }
 }
 
 const Template = (args: any) => ({
