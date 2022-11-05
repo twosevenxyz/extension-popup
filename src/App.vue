@@ -19,79 +19,95 @@ const props = defineProps<{
   isPausedOnAllWebsites: Ref<boolean>,
   tabMedia: Ref<Record<string, any>>,
   profile: Ref<Profile>,
-  lastActiveTwoSevenTabId: number
+  lastActiveTwoSevenTabId: number | null
 }>()
 
-const waitingForBG = ref(false)
+// const waitingForBG = ref(false)
 
-function isEmpty (obj: any) {
-  if (!obj) {
-    return true
-  }
-  if (obj instanceof Object) {
-    return Object.keys(obj).length === 0
-  } else if (obj instanceof Array) {
-    return obj.length === 0
-  }
-  throw new Error(`isEmpty not implemented for instance: '${typeof obj}'`)
-}
+// function isEmpty (obj: any) {
+//   if (!obj) {
+//     return true
+//   }
+//   if (obj instanceof Object) {
+//     return Object.keys(obj).length === 0
+//   } else if (obj instanceof Array) {
+//     return obj.length === 0
+//   }
+//   throw new Error(`isEmpty not implemented for instance: '${typeof obj}'`)
+// }
 
-const avatarSrc = computed<string>(() => {
-  return `https://twoseven.xyz/api/gravatar/${props.profile.value?.userHash}/64`
-})
+// const avatarSrc = computed<string>(() => {
+//   return `https://twoseven.xyz/api/gravatar/${props.profile.value?.userHash}/64`
+// })
 
-const nickname = computed<string | undefined>(() => {
-  return props.profile.value?.nickname
-})
+// const nickname = computed<string | undefined>(() => {
+//   return props.profile.value?.nickname
+// })
 
-const validOrigin = computed<boolean>(() => {
-  if (origin && origin.startsWith('chrome')) {
-    return false
-  }
-  return true
-})
+// const validOrigin = computed<boolean>(() => {
+//   if (origin && origin.startsWith('chrome')) {
+//     return false
+//   }
+//   return true
+// })
 
-const shouldShowMedia = computed<boolean>(() => {
-  if (isEmpty(props.tabMedia.value)) {
-    return false
-  }
-  // We have some media that was detected on this tab
-  if (is.mobile()) {
-    // Mobile devices cannot login. So check whether they have a twoseven tab open
-    // If they do, we can simply load it in there without requiring login check
-    return (props.lastActiveTwoSevenTabId || -1) > -1
-  }
-  return props.loggedIn.value
-})
+// const shouldShowMedia = computed<boolean>(() => {
+//   if (isEmpty(props.tabMedia.value)) {
+//     console.log('props.tabMedia is empty', props.tabMedia.value)
+//     return false
+//   }
+//   // We have some media that was detected on this tab
+//   if (is.mobile()) {
+//     // Mobile devices cannot login. So check whether they have a twoseven tab open
+//     // If they do, we can simply load it in there without requiring login check
+//     return (props.lastActiveTwoSevenTabId || -1) > -1
+//   }
+//   return props.loggedIn.value
+// })
 
-const login = async () => {
-  await props.sendMessage('authenticate', {})
-}
+// const login = async () => {
+//   await props.sendMessage('authenticate', {})
+// }
 
-const logout = () => {
-  // Remove the idToken from storage
-  props.sendMessage('logout', {})
-}
+// const logout = () => {
+//   // Remove the idToken from storage
+//   props.sendMessage('logout', {})
+// }
 
-// Actions
-const openTwoSeven = async () => {
-  await props.sendMessage('open-twoseven.xyz', {})
-}
+// // Actions
+// const openTwoSeven = async () => {
+//   await props.sendMessage('open-twoseven.xyz', {})
+// }
 
-const showTabMedia = async () => {
-  await props.sendMessage('show-tab-media', {})
-}
+// const showTabMedia = async () => {
+//   await props.sendMessage('show-tab-media', {})
+// }
 
-const handlePauseOnWebiste = async () => {
-  await props.sendMessage('pause-on-website', { shouldPause: !props.isPausedOnWebsite.value })
-}
+// const handlePauseOnWebsite = async () => {
+//   await props.sendMessage('pause-on-website', { shouldPause: !props.isPausedOnWebsite.value })
+// }
 
-const handlePauseOnAllWebsites = async () => {
-  props.sendMessage('pause-on-all-websites', { shouldPause: !props.isPausedOnAllWebsites.value })
-}
-const openSettings = () => {
-  return props.browser.runtime.openOptionsPage()
-}
+// const handlePauseOnAllWebsites = async () => {
+//   props.sendMessage('pause-on-all-websites', { shouldPause: !props.isPausedOnAllWebsites.value })
+// }
+// const openSettings = () => {
+//   return props.browser.runtime.openOptionsPage()
+// }
+
+// defineExpose({
+//   waitingForBG,
+//   avatarSrc,
+//   nickname,
+//   validOrigin,
+//   shouldShowMedia,
+//   login,
+//   logout,
+//   openTwoSeven,
+//   showTabMedia,
+//   handlePauseOnWebsite,
+//   handlePauseOnAllWebsites,
+//   openSettings
+// })
 </script>
 
 <template>
@@ -140,7 +156,7 @@ const openSettings = () => {
         </span>
       </a>
 
-      <a v-if="validOrigin" class="dropdown-item option" @click="handlePauseOnWebiste">
+      <a v-if="validOrigin" class="dropdown-item option" @click="handlePauseOnWebsite">
         <span class="icon-text">
           <span class="icon">
             <i-mdi-play v-if="isPausedOnWebsite.value" />
@@ -177,11 +193,79 @@ const openSettings = () => {
 </template>
 
 <script lang="ts">
+
+function isEmpty (obj: any) {
+  if (!obj) {
+    return true
+  }
+  if (obj instanceof Object) {
+    return Object.keys(obj).length === 0
+  } else if (obj instanceof Array) {
+    return obj.length === 0
+  }
+  throw new Error(`isEmpty not implemented for instance: '${typeof obj}'`)
+}
+
 export default defineComponent({
-  name: 'app',
   components: { Spinner },
+  data () {
+    return {
+      waitingForBG: false
+    }
+  },
+  computed: {
+    avatarSrc () {
+      return `https://twoseven.xyz/api/gravatar/${this.profile.value?.userHash}/64`
+    },
+    nickname () {
+      return this.profile.value?.nickname
+    },
+    validOrigin () {
+      if (this.origin && this.origin.startsWith('chrome')) {
+        return false
+      }
+      return true
+    },
+    shouldShowMedia () {
+      if (isEmpty(this.tabMedia.value)) {
+        console.log('this.tabMedia is empty', this.tabMedia.value)
+        return false
+      }
+      // We have some media that was detected on this tab
+      if (is.mobile()) {
+        // Mobile devices cannot login. So check whether they have a twoseven tab open
+        // If they do, we can simply load it in there without requiring login check
+        return (this.lastActiveTwoSevenTabId || -1) > -1
+      }
+      return this.loggedIn.value
+    }
+  },
+  methods: {
+    async login () {
+      await this.sendMessage('authenticate', {})
+    },
+    async logout () {
+      // Remove the idToken from storage
+      this.sendMessage('logout', {})
+    },
+    async openTwoSeven () {
+      await this.sendMessage('open-twoseven.xyz', {})
+    },
+    async showTabMedia () {
+      await this.sendMessage('show-tab-media', {})
+    },
+    async handlePauseOnWebsite () {
+      await this.sendMessage('pause-on-website', { shouldPause: !this.isPausedOnWebsite.value })
+    },
+    nAllWebsites () {
+      this.sendMessage('pause-on-all-websites', { shouldPause: !this.isPausedOnAllWebsites.value })
+    },
+    async openSettings () {
+      return this.browser.runtime.openOptionsPage()
+    }
+  },
   mounted () {
-    window.app = this
+    ;(window as any).app = this
   }
 })
 </script>
