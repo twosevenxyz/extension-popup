@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref, defineComponent } from 'vue'
 import { computed } from '@vue/reactivity'
-import type { onMessage as OnMessage, sendMessage as SendMessage } from 'webext-bridge'
+import type { onMessage as OnMessage, sendMessage as SendMessage } from 'webext-bridge/popup'
 
 import type { Browser } from 'webextension-polyfill'
 import is from 'is_js'
