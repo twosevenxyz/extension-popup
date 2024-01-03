@@ -16,51 +16,51 @@
           </div>
         </div>
         <div v-else-if="!loggedIn" class="center login-container">
-          <h5> You are not logged in </h5>
-          <a class="btn waves-teal waves-effect" style="margin-bottom: 8px" @click="login">Login to twoseven.xyz</a>
+          <h5 data-testid="loggedOutText"> You are not logged in </h5>
+          <a class="btn waves-teal waves-effect" style="margin-bottom: 8px" data-testid="loginButton" @click="login">Login to twoseven.xyz</a>
           <div class="divider"></div>
         </div>
         <div>
           <div id="options" class="collection" style="margin-top: 0;">
             <div v-if="loggedIn">
               <div id="profile" style="display: inline-block;">
-                <img :src="avatarSrc" class="circle avatar" :alt="nickname"/>
-                <span class="nickname">{{ nickname }}</span>
-                <a class="btn btn-small btn-flat right logout-btn" @click="logout">Logout</a>
+                <img :src="avatarSrc" class="circle avatar" :alt="nickname" data-testid="avatar"/>
+                <span class="nickname" data-testid="nickname">{{ nickname }}</span>
+                <a class="btn btn-small btn-flat right logout-btn" data-testid="logoutButton" @click="logout">Logout</a>
               </div>
               <div class="divider"></div>
             </div>
 
-            <a v-if="shouldShowMedia" class="collection-item option" @click="showTabMedia">
+            <a v-if="shouldShowMedia" class="collection-item option" data-testid="showMediaButton" @click="showTabMedia">
               <div>
                 <span> Show Media </span>
                 <span class="right new badge media-badge" data-badge-caption="">{{ Object.keys(tabMedia).length }}</span>
               </div>
             </a>
 
-            <a class="collection-item option" @click="openSettings">
+            <a class="collection-item option" data-testid="openSettingsButton" @click="openSettings">
               <div>
                 <span> Settings </span>
               </div>
             </a>
 
-            <a v-if="validOrigin" class="collection-item option" @click="handlePauseOnWebiste">
-              <span>
-                <span v-if="isPausedOnWebsite">Unpause</span>
-                <span v-else>Pause</span>
+            <a v-if="validOrigin" class="collection-item option" data-testid="togglePauseButton" @click="handlePauseOnWebiste">
+              <span data-testid="togglePauseText">
+                <span v-if="isPausedOnWebsite" data-testid="togglePauseActionText">Unpause</span>
+                <span v-else data-testid="togglePauseActionText">Pause</span>
                 on this website
               </span>
             </a>
 
-            <a class="collection-item option" @click="handlePauseOnAllWebsites">
-              <span>
-                <span v-if="isPausedOnAllWebsites">Unpause</span>
-                <span v-else>Pause</span>
+            <a class="collection-item option" data-testid="togglePauseOnAllWebsitesButton" @click="handlePauseOnAllWebsites">
+              <span data-testid="pauseOnAllWebsitesText">
+                <span v-if="isPausedOnAllWebsites" data-testid="pauseOnAllWebsitesActionText">Unpause</span>
+                <span v-else data-testid="pauseOnAllWebsitesActionText">Pause</span>
                 on all websites
               </span>
             </a>
 
-            <a class="collection-item option" @click="openTwoSeven">
+            <a class="collection-item option" data-testid="openTwoSevenButton" @click="openTwoSeven">
               Go to twoseven.xyz
             </a>
           </div>
@@ -68,7 +68,7 @@
 
         <div style="position: fixed; bottom: 0; width: 100%;">
           <div>
-            <code style="float: right;padding: 8px 16px;">v{{ version }}</code>
+            <code style="float: right;padding: 8px 16px;" data-testid="versionText">v{{ version }}</code>
           </div>
         </div>
       </div>
