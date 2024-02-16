@@ -118,8 +118,8 @@ const props = defineProps<{
       </div>
       <div v-else-if="!loggedIn.value">
         <div class="dropdown-item has-text-centered login-container">
-          <h5 class="is-size-5 has-text-weight-bold"> You are not logged in </h5>
-          <button class="button" style="margin-bottom: 8px" @click="login">Login to twoseven.xyz</button>
+          <h5 class="is-size-5 has-text-weight-bold" data-testid="loggedOutText"> You are not logged in </h5>
+          <button class="button" style="margin-bottom: 8px" data-testid="loginButton" @click="login">Login to twoseven.xyz</button>
         </div>
         <hr class="dropdown-divider" />
       </div>
@@ -127,15 +127,15 @@ const props = defineProps<{
       <div v-if="loggedIn.value" class="dropdown-item">
         <div id="profile">
           <figure class="image is-32x32 is-inline-block">
-            <img :src="avatarSrc" class="is-rounded" :alt="nickname" />
+            <img :src="avatarSrc" class="is-rounded" :alt="nickname" data-testid="avatar"/>
           </figure>
-          <span class="nickname">{{ nickname }}</span>
-          <button class="button is-small" @click="logout">Logout</button>
+          <span class="nickname" data-testid="nickname">{{ nickname }}</span>
+          <button class="button is-small" data-testid="logoutButton" @click="logout">Logout</button>
         </div>
         <div class="divider"></div>
       </div>
 
-      <a v-if="shouldShowMedia" class="dropdown-item option" @click="showTabMedia">
+      <a v-if="shouldShowMedia" class="dropdown-item option" data-testid="showMediaButton" @click="showTabMedia">
         <div class="is-flex is-flex-direction-row">
           <span class="icon-text is-flex-grow-1">
             <span class="icon">
@@ -147,7 +147,7 @@ const props = defineProps<{
         </div>
       </a>
 
-      <a class="dropdown-item option" @click="openSettings">
+      <a class="dropdown-item option" data-testid="openSettingsButton" @click="openSettings">
         <span class="icon-text">
           <span class="icon">
             <i-cil-settings />
@@ -156,27 +156,35 @@ const props = defineProps<{
         </span>
       </a>
 
-      <a v-if="validOrigin" class="dropdown-item option" @click="handlePauseOnWebsite">
+      <a v-if="validOrigin" class="dropdown-item option" data-testid="togglePauseButton" @click="handlePauseOnWebsite">
         <span class="icon-text">
           <span class="icon">
             <i-mdi-play v-if="isPausedOnWebsite.value" />
             <i-mdi-pause v-else />
           </span>
-          <span> {{ isPausedOnWebsite.value ? 'Unpause' : 'Pause' }} on this website</span>
+          <span data-testid="togglePauseText">
+            <span v-if="isPausedOnWebsite.value" data-testid="togglePauseActionText">Unpause</span>
+            <span v-else data-testid="togglePauseActionText">Pause</span>
+            on this website
+          </span>
         </span>
       </a>
 
-      <a class="dropdown-item option" @click="handlePauseOnAllWebsites">
-        <span class="icon-text">
+      <a class="dropdown-item option" data-testid="togglePauseOnAllWebsitesButton" @click="handlePauseOnAllWebsites">
+        <span class="icon-text" data-testid="pauseOnAllWebsitesText">
           <span class="icon">
             <i-mdi-play v-if="isPausedOnAllWebsites.value" />
             <i-mdi-pause v-else />
           </span>
-          <span> {{ isPausedOnAllWebsites.value ? 'Unpause' : 'Pause' }} on all websites</span>
+          <span data-testid="pauseOnAllWebsitesText">
+            <span v-if="isPausedOnAllWebsites.value" data-testid="pauseOnAllWebsitesActionText">Unpause</span>
+            <span v-else data-testid="pauseOnAllWebsitesActionText">Pause</span>
+            on all websites
+          </span>
         </span>
       </a>
 
-      <a class="dropdown-item option" @click="openTwoSeven">
+      <a class="dropdown-item option" data-testid="openTwoSevenButton" @click="openTwoSeven">
         <span class="icon-text">
           <span class="icon">
             <img src="/assets/icon-512x512.png" />
@@ -186,7 +194,7 @@ const props = defineProps<{
       </a>
 
       <div style="position: absolute; bottom: 8px; right: 16px;">
-        <span class="is-family-monospace is-size-7">v{{ version }}</span>
+        <span class="is-family-monospace is-size-7" data-testid="versionText">v{{ version }}</span>
       </div>
     </div>
   </div>
