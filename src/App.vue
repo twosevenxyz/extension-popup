@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, ref, defineComponent } from 'vue'
+import { Ref, ref, defineComponent, nextTick } from 'vue'
 import { computed } from '@vue/reactivity'
 import type { onMessage as OnMessage, sendMessage as SendMessage } from 'webext-bridge/popup'
 
@@ -241,8 +241,6 @@ export default defineComponent({
       }
       // We have some media that was detected on this tab
       if (is.mobile()) {
-        // Mobile devices cannot login. So check whether they have a twoseven tab open
-        // If they do, we can simply load it in there without requiring login check
         return (this.lastActiveTwoSevenTabId || -1) > -1
       }
       return this.loggedIn.value
@@ -253,14 +251,15 @@ export default defineComponent({
       await this.sendMessage('authenticate', {})
     },
     async logout () {
-      // Remove the idToken from storage
       this.sendMessage('logout', {})
     },
     async openTwoSeven () {
       await this.sendMessage('open-twoseven.xyz', {})
     },
     async showTabMedia () {
-      await this.sendMessage('show-tab-media', {})
+      this.sendMessage('show-tab-media', {})
+      await nextTick()
+      window.close()
     },
     async handlePauseOnWebsite () {
       await this.sendMessage('pause-on-website', { shouldPause: !this.isPausedOnWebsite.value })
@@ -269,7 +268,9 @@ export default defineComponent({
       this.sendMessage('pause-on-all-websites', { shouldPause: !this.isPausedOnAllWebsites.value })
     },
     async openSettings () {
-      return this.browser.runtime.openOptionsPage()
+      await this.browser.runtime.openOptionsPage()
+      await nextTick()
+      window.close()
     }
   },
   mounted () {
