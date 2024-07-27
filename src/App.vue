@@ -213,8 +213,10 @@ export default {
     openTwoSeven () {
       this.triggerAction('open-twoseven.xyz', 'base-bg')
     },
-    showTabMedia () {
+    async showTabMedia () {
       this.triggerAction('show-tab-media', 'tab-media-bg')
+      await this.$nextTick()
+      window.close()
     },
     handlePauseOnWebiste () {
       this.triggerAction('pause-on-website', 'base-bg', false, { shouldPause: !this.isPausedOnWebsite })
@@ -222,8 +224,10 @@ export default {
     handlePauseOnAllWebsites () {
       this.triggerAction('pause-on-all-websites', 'base-bg', false, { shouldPause: !this.isPausedOnAllWebsites })
     },
-    openSettings () {
+    async openSettings () {
       browser.runtime.openOptionsPage()
+      await this.$nextTick()
+      window.close()
     }
   },
   async beforeMount () {
