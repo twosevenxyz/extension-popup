@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Ref, ref, defineComponent, nextTick } from 'vue'
-import { computed } from '@vue/reactivity'
+import { Ref, defineComponent, nextTick } from 'vue'
 import type { onMessage as OnMessage, sendMessage as SendMessage } from 'webext-bridge/popup'
 
 import type { Browser } from 'webextension-polyfill'
+// @ts-ignore
 import is from 'is_js'
 import Spinner from './components/spinner.vue'
 import { Profile } from '../shim'
@@ -280,7 +280,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'bulma/bulma.sass';
+@import 'bulma/sass/_index.scss';
 
 html,
 body {
