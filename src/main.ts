@@ -5,6 +5,6 @@ import { randomCredentials, randomAuthResult, fakeInitialize } from './js/test'
 const app = createApp(App)
 app.mount('#app')
 
-window.randomCredentials = randomCredentials
-window.randomAuthResult = randomAuthResult
-window.fakeInitialize = fakeInitialize
+;(window as any).randomCredentials = randomCredentials
+;(window as any).randomAuthResult = randomAuthResult
+;(window as any).fakeInitialize = fakeInitialize

@@ -21,8 +21,8 @@ function randomAuthResult () {
 }
 
 function fakeInitialize () {
-  window.app.version = '99.99.9.9'
-  window.app.updateAuthResults(randomAuthResult())
+  ;(window as any).app.version = '99.99.9.9'
+  ;(window as any).app.updateAuthResults(randomAuthResult())
 }
 
 export {
