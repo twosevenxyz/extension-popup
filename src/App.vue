@@ -80,6 +80,8 @@ const openTwoSeven = async () => {
 
 const showTabMedia = async () => {
   await props.sendMessage('show-tab-media', {})
+  await nextTick()
+  window.close()
 }
 
 const handlePauseOnWebsite = async () => {
