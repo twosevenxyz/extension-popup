@@ -2,14 +2,14 @@
 import { Ref, ref, computed, nextTick, onMounted, getCurrentInstance } from 'vue'
 import type { onMessage as OnMessage, sendMessage as SendMessage } from 'webext-bridge/popup'
 
-import type { Browser } from 'webextension-polyfill'
+import type { Runtime } from 'webextension-polyfill'
 // @ts-ignore
 import is from 'is_js'
 import Spinner from './components/spinner.vue'
 import { Profile } from '../shim'
 
 const props = defineProps<{
-  browser: Browser,
+  openOptionsPage: Runtime.Static['openOptionsPage'],
   onMessage: typeof OnMessage,
   sendMessage: typeof SendMessage,
   version: String,
@@ -93,7 +93,7 @@ const handlePauseOnAllWebsites = async () => {
 }
 
 const openSettings = async () => {
-  await props.browser.runtime.openOptionsPage()
+  await props.openOptionsPage()
   await nextTick()
   window.close()
 }
