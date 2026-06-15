@@ -14,12 +14,12 @@ const props = defineProps<{
   sendMessage: typeof SendMessage,
   version: String,
   loggedIn: Ref<boolean>,
-  origin: string,
+  origin: Ref<string>,
   isPausedOnWebsite: Ref<boolean>,
   isPausedOnAllWebsites: Ref<boolean>,
   tabMedia: Ref<Record<string, any>>,
   profile: Ref<Profile>,
-  lastActiveTwoSevenTabId: number | null
+  lastActiveTwoSevenTabId: Ref<number | null>
 }>()
 
 const waitingForBG = ref(false)
@@ -45,7 +45,7 @@ const nickname = computed<string | undefined>(() => {
 })
 
 const validOrigin = computed<boolean>(() => {
-  if (props.origin.startsWith('chrome') || props.origin.startsWith('about')) {
+  if (props.origin.value.startsWith('chrome') || props.origin.value.startsWith('about')) {
     return false
   }
   return true
@@ -60,7 +60,7 @@ const shouldShowMedia = computed<boolean>(() => {
   if (is.mobile()) {
     // Mobile devices cannot login. So check whether they have a twoseven tab open
     // If they do, we can simply load it in there without requiring login check
-    return (props.lastActiveTwoSevenTabId || -1) > -1
+    return (props.lastActiveTwoSevenTabId.value || -1) > -1
   }
   return props.loggedIn.value
 })
